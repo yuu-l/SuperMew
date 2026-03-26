@@ -33,3 +33,5 @@ study = [
     "chromadb>=0.5.5",
     "bilibili-api-python>=17.0.0",
 ]
+[tool.uv]
+index-url = "https://pypi.tuna.tsinghua.edu.cn/simple"

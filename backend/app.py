@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import os
 
-import api as api_module
+from . import api
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
@@ -32,7 +32,7 @@ def create_app() -> FastAPI:
             response.headers["Expires"] = "0"
         return response
 
-    app.include_router(api_module.router)
+    app.include_router(api.router)
 
     # serve frontend static files at root
     if FRONTEND_DIR.exists():

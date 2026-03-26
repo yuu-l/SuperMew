@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
 
-from schemas import (
+from .schemas import (
     ChatRequest,
     ChatResponse,
     SessionListResponse,
@@ -18,12 +18,12 @@ from schemas import (
     DocumentUploadResponse,
     DocumentDeleteResponse,
 )
-from agent import chat_with_agent, chat_with_agent_stream, storage
-from document_loader import DocumentLoader
-from parent_chunk_store import ParentChunkStore
-from milvus_writer import MilvusWriter
-from milvus_client import MilvusManager
-from embedding import EmbeddingService
+from .agent import chat_with_agent, chat_with_agent_stream, storage
+from .document_loader import DocumentLoader
+from .parent_chunk_store import ParentChunkStore
+from .milvus_writer import MilvusWriter
+from .milvus_client import MilvusManager
+from .embedding import EmbeddingService
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR.parent / "data"

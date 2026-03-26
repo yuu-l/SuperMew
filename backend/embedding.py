@@ -13,9 +13,14 @@ class EmbeddingService:
     """文本向量化服务 - 支持密集向量和稀疏向量"""
 
     def __init__(self):
-        self.base_url = os.getenv("BASE_URL")
-        self.embedder = os.getenv("EMBEDDER")
-        self.api_key = os.getenv("ARK_API_KEY")
+        # self.base_url = os.getenv("BASE_URL")
+        # self.embedder = os.getenv("EMBEDDER")
+        # self.api_key = os.getenv("ARK_API_KEY")
+        # Ollama 默认地址
+        self.base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        self.embedder = os.getenv("OLLAMA_EMBEDDER", "qwen3-embedding:0.6b")  # 常用模型
+        # 无需 API Key
+        self.api_key = os.getenv("OLLAMA_API_KEY")
         
         # BM25 参数
         self.k1 = 1.5  # 词频饱和参数
@@ -30,30 +35,53 @@ class EmbeddingService:
         self._total_docs = 0
         self._avg_doc_len = 0
 
+    # def get_embeddings(self, texts: list[str]) -> list[list[float]]:
+    #     """
+    #     调用嵌入 API 生成密集向量
+    #     :param texts: 待转换的文本列表（支持批量）
+    #     :return: 向量列表
+    #     """
+    #     headers = {
+    #         "Authorization": f"Bearer {self.api_key}",
+    #         "Content-Type": "application/json"
+    #     }
+    #     data = {
+    #         "model": self.embedder,
+    #         "input": texts,
+    #         "encoding_format": "float"
+    #     }
+    #
+    #     try:
+    #         response = requests.post(url=f"{self.base_url}/api/embeddings", headers=headers, json=data)
+    #         response.raise_for_status()
+    #         result = response.json()
+    #         return [item["embedding"] for item in result["data"]]
+    #     except Exception as e:
+    #         raise Exception(f"嵌入 API 调用失败: {str(e)}")
+
     def get_embeddings(self, texts: list[str]) -> list[list[float]]:
         """
-        调用嵌入 API 生成密集向量
-        :param texts: 待转换的文本列表（支持批量）
+        调用 Ollama 本地嵌入服务生成密集向量
+        :param texts: 文本列表
         :return: 向量列表
         """
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-        data = {
-            "model": self.embedder,
-            "input": texts,
-            "encoding_format": "float"
-        }
+        url = f"{self.base_url}/api/embeddings"
+        embeddings = []
 
-        try:
-            response = requests.post(f"{self.base_url}/embeddings", headers=headers, json=data)
-            response.raise_for_status()
-            result = response.json()
-            return [item["embedding"] for item in result["data"]]
-        except Exception as e:
-            raise Exception(f"嵌入 API 调用失败: {str(e)}")
+        for text in texts:
+            data = {
+                "model": self.embedder,
+                "prompt": text
+            }
+            try:
+                response = requests.post(url, json=data, timeout=30)
+                response.raise_for_status()
+                result = response.json()
+                embeddings.append(result["embedding"])
+            except Exception as e:
+                raise Exception(f"Ollama embedding 调用失败: {str(e)}")
 
+        return embeddings
     def tokenize(self, text: str) -> list[str]:
         """
         简单分词器 - 支持中英文混合
@@ -167,3 +195,8 @@ class EmbeddingService:
         dense_embeddings = self.get_embeddings(texts)
         sparse_embeddings = self.get_sparse_embeddings(texts)
         return dense_embeddings, sparse_embeddings
+
+if __name__ == '__main__':
+    service = EmbeddingService()
+    vectors = service.get_embeddings(["你好世界", "Hello world"])
+    print(len(vectors[0]))  # 打印向量维度

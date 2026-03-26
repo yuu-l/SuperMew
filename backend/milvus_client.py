@@ -15,12 +15,13 @@ class MilvusManager:
         self.collection_name = os.getenv("MILVUS_COLLECTION", "embeddings_collection")
         self.client = MilvusClient(uri=f"http://{self.host}:{self.port}")
 
-    def init_collection(self, dense_dim: int = 2560):
+    def init_collection(self, dense_dim: int = 1024):
         """
         初始化 Milvus 集合 - 同时支持密集向量和稀疏向量
         :param dense_dim: 密集向量维度
         """
         if not self.client.has_collection(self.collection_name):
+            print("没有集合存在，生成新的集合")
             schema = self.client.create_schema(auto_id=True, enable_dynamic_field=True)
             
             # 主键
@@ -243,3 +244,8 @@ class MilvusManager:
         """删除集合（用于重建 schema）"""
         if self.client.has_collection(self.collection_name):
             self.client.drop_collection(self.collection_name)
+
+if __name__ == "__main__":
+    client = MilvusClient()
+
+    client.delete("embeddings_collection")

@@ -5,7 +5,7 @@ import os
 
 # 将 backend 路径添加到 sys.path，以便导入你的 RAG 模块
 sys.path.append(os.path.join(os.path.dirname(__file__), "backend"))
-from rag_pipeline import run_rag_graph
+from backend.rag_pipeline import run_rag_graph
 
 load_dotenv()
 
